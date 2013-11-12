@@ -1,0 +1,36 @@
+1. 
+
+Citing from the first url:
+
+Here's the SQL statement that will find the closest 20 locations that are within a radius of 25 miles to the 37, -122 coordinate. It calculates the distance based on the latitude/longitude of that row and the target latitude/longitude, and then asks for only rows where the distance value is less than 25, orders the whole query by distance, and limits it to 20 results. To search by kilometers instead of miles, replace 3959 with 6371.
+
+SELECT id, ( 3959 * acos( cos( radians(37) ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(-122) ) + sin( radians(37) ) * sin( radians( lat ) ) ) ) AS distance FROM markers HAVING distance < 25 ORDER BY distance LIMIT 0 , 20;
+
+
+2.
+SELECT  *
+FROM    mytable m
+JOIN    mytable mn
+ON      ACOS(COS(RADIANS(m.latitude)) * COS(RADIANS(mn.latitude)) * COS(RADIANS(mn.longitude) - RADIANS(m.longitude)) + SIN(RADIANS(m.latitude)) * SIN(radians(mn.latitude))) <= 20 / 6371.0
+WHERE   m.name = 'grey river'
+
+3. Google Based:
+
+Ref: https://developers.google.com/maps/articles/phpsqlsearch_v3?hl=hu-HU&csw=1
+
+$query = sprintf("SELECT address, name, lat, lng, ( 3959 * acos( cos( radians('%s') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians('%s') ) + sin( radians('%s') ) * sin( radians( lat ) ) ) ) AS distance FROM markers HAVING distance < '%s' ORDER BY distance LIMIT 0 , 20",
+  mysql_real_escape_string($center_lat),
+  mysql_real_escape_string($center_lng),
+  mysql_real_escape_string($center_lat),
+  mysql_real_escape_string($radius));
+$result = mysql_query($query);
+
+4. Another one:
+
+Ref: http://chrishacia.com/2012/03/mysql-query-to-get-radius-of-longitude-and-latitude/
+
+$distance = 10;
+$latitude = 37.295092;
+$longitude = -121.896490;
+ 
+$sql = "SELECT loc.*, (((acos(sin(($latitude*pi()/180)) * sin((`latitude`*pi()/180))+cos(($latitude*pi()/180)) * cos((`latitude`*pi()/180)) * cos((($longitude - `longitude`)*pi()/180))))*180/pi())*60*1.1515) AS `distance` FROM table_with_lonlat_ref loc HAVING distance < $distance"
